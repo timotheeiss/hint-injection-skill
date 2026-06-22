@@ -18,6 +18,9 @@ Use embedded attributes such as:
 - data-agent-target: destination or controlled target
 - data-agent-controls: related UI region this element controls
 - data-agent-observes: related state/value this element affects or exposes
+- data-agent-options: for a select/dropdown trigger, its available options as
+  "value|Label" pairs separated by ";" (label optional), so an agent can choose
+  an option without opening the menu and reading the accessibility tree
 
 Prefer only the fields that are useful. Do not add all fields everywhere.
 
@@ -119,7 +122,19 @@ Uniqueness caution:
   (e.g. the title link, or the row's name heading), so the compact snapshot
   carries a human-meaningful name the agent can match against.
 
-A select option:
+A select/dropdown trigger that lists its options (so the agent can pick one
+without opening the menu), paired with per-option ids on the items:
+
+<button
+  data-agent-id="filters.sort"
+  data-agent-role="select"
+  data-agent-action="sort-products"
+  data-agent-options="newest|Newest;price-asc|Price: Low to High;price-desc|Price: High to Low"
+>
+  Sort by
+</button>
+
+A select option (each item, addressable as <trigger-id>.option.<value>):
 
 <div
   data-agent-id="filters.sort.option.price-asc"
