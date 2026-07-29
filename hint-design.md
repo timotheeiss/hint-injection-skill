@@ -7,7 +7,7 @@ implement this file — change it here first, then in those three places.
 ## 1. Purpose
 
 Hints describe what the UI **means and affords**, so an agent can understand a
-screen, act on it, and read its state without a full accessibility tree.
+screen, act on it, and read its state *without* a full accessibility tree or DOM reading.
 
 Hints never encode test intent: no assertions, no expected values, no
 pass/fail logic, no "the total should be £42". Describing what the UI *is*
@@ -18,14 +18,16 @@ is in scope; describing what it *should be* is not.
 The agent sees only a compact snapshot extracted from `data-agent-*`
 attributes. Three consequences:
 
-- **The extractor reads live values for you.** For inputs and observables it
-  captures the element's current on-screen text or form value automatically.
-  Never write a value into an attribute yourself.
+- **The extractor reads live values for you.** For the roles that hold one
+  (`input`, `select`, `toggle`, `slider`, `observable`) it captures the
+  element's current on-screen text or form value automatically. Never write a
+  value into an attribute yourself.
 - **Only `data-agent-*` attributes are read.** Mirroring data into `data-price`
   or `data-product-id` does nothing — it never reaches the agent.
-- **Nothing is inferred from the DOM.** Tag names, ARIA roles and input types
-  are never used to guess an element's meaning. An element with a
-  `data-agent-id` and no `data-agent-role` is uncategorized, not repaired.
+- **Nothing is inferred, and nothing is repaired.** Tag names, ARIA roles and
+  input types are never used to guess an element's meaning, and a partial hint
+  is never completed for you. An element with a `data-agent-id` and no
+  `data-agent-role` lands in `other`, where it is visible as the gap it is.
 
 ## 3. The seven attributes
 
@@ -49,31 +51,28 @@ its menu cannot drift apart.
 
 ## 4. The ten roles
 
-This list is closed. Any other value is **not recognized** and the element
-falls into the snapshot's `other` bucket.
+This list is closed, and **the role is also the snapshot group**: the extractor
+files each element under its role, so entries carry no `role` field — the group
+name already states it.
 
-| Role | Use for | Bucket |
-|---|---|---|
-| `navigation` | link/button that moves to another screen or view | navigation |
-| `action` | any command button (submit, buy, edit, delete, clear, add) | actions |
-| `option` | one option inside a select or listbox | actions |
-| `input` | text/number/search field or textarea | inputs |
-| `select` | a select/dropdown trigger — pair with `data-agent-options` | inputs |
-| `toggle` | checkbox, switch, on-off chip, tag filter | inputs |
-| `slider` | range slider | inputs |
-| `observable` | element that only displays a value to be read | observables |
-| `region` | a meaningful grouping — form, filter panel, dialog, banner | regions |
-| `collection` | container of repeated items — list, grid, table | regions |
+| Role | Use for |
+|---|---|
+| `navigation` | link/button that moves to another screen or view |
+| `action` | any command button (submit, buy, edit, delete, clear, add) |
+| `option` | one option inside a select or listbox |
+| `input` | text/number/search field or textarea |
+| `select` | a select/dropdown trigger — pair with `data-agent-options` |
+| `toggle` | checkbox, switch, on-off chip, tag filter |
+| `slider` | range slider |
+| `observable` | element that only displays a value to be read |
+| `region` | a meaningful grouping — form, filter panel, dialog, banner |
+| `collection` | container of repeated items — list, grid, table |
 
-Notes:
-
-- **There is no `primary-action`.** Every command button is `action`; the id
-  says which one matters (`checkout.submit`).
-- **There are no domain roles.** A product card is not `role="product-card"` —
-  it is `navigation` (it opens the detail view) or `action`, and the domain
-  noun lives in its id (`products.grid.item.sony-xm5`).
-- **There are no `*-region` variants.** A checkout form and a filter panel are
-  both `region`; their ids (`checkout.form`, `filters.panel`) say which.
+Anything else — an off-vocabulary value, or no `data-agent-role` at all — lands
+in `other`. That group is the snapshot's record of a hinting gap, never a
+category to aim for. There are no fallbacks and no repairs: an element with a
+`data-agent-action` but no role is `other`, not an action, and `Action` is not
+`action`.
 
 ## 5. `data-agent-state`
 
